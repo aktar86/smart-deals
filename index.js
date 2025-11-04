@@ -37,7 +37,15 @@ async function run() {
       //   .limit(2)
       //   .project(projectFields);
 
-      const cursor = productsCollection.find();
+      //my products
+      console.log(req.query);
+      const email = req.query.email;
+      const query = {};
+      if (email) {
+        query.email = email;
+      }
+
+      const cursor = productsCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     });
@@ -95,3 +103,15 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`smart server is running on: ${port}`);
 });
+
+/**
+ * i already have a product collections
+ * now i need to add bids. where people can bid their own price for a product. I will also have to see what the bids for this products. also i can see my bids to any of the products. i will be able to remove my bids. see statsus of the products i have bit. etc
+ *
+ *
+ * how shouldt store this bit information. what are different options i have what are the different criterias i should think to make the decision.
+ *
+ * give me 10 fake json data for bids
+ * what is primary key?
+ * what is foreign key?
+ */
