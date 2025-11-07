@@ -26,7 +26,34 @@ async function run() {
     // create database
     const db = client.db("smart_DB");
     const productsCollection = db.collection("products");
+    const bidsCollection = db.collection("bids");
+    const userCollection = db.collection("users");
 
+    // user APIs here
+    app.post("/users", async (req, res) => {
+      const newUser = req.body;
+
+      //user check
+      const email = req.body.email;
+      const query = { email: email };
+      const existingUser = await userCollection.findOne(query);
+      if (existingUser) {
+        res.send({
+          message: "user already exist. do not neet to insert again",
+        });
+      } else {
+        const result = await userCollection.insertOne(newUser);
+        res.send(result);
+      }
+    });
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // Product APIs here
     // get specific all products
     app.get("/products", async (req, res) => {
       // const projectFields = { title: 1, price_min: 1, price_max: 1 };
@@ -50,11 +77,21 @@ async function run() {
       res.send(result);
     });
 
+    // Latest Product
+    app.get("/latest-products", async (req, res) => {
+      const cursor = productsCollection
+        .find()
+        .sort({ created_at: -1 })
+        .limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // get specific products
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await productsCollection.findOne(query);
+      // const query = { _id: new ObjectId(id) };
+      const result = await productsCollection.findOne({ _id: id });
       res.send(result);
     });
 
@@ -67,7 +104,8 @@ async function run() {
     app.patch("/products/:id", async (req, res) => {
       const id = req.params.id;
       const updatedProduct = req.body;
-      const query = { _id: new ObjectId(id) };
+      // const query = { _id: new ObjectId(id) };
+      const query = { _id: id };
       const update = {
         $set: {
           name: updatedProduct.name,
@@ -81,7 +119,8 @@ async function run() {
 
     app.delete("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
+      // const query = { _id: new ObjectId(id) };
+      const query = { _id: id };
       const result = await productsCollection.deleteOne(query);
       res.send(result);
     });
