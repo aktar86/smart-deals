@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 // middleware
 app.use(cors());
@@ -122,39 +122,6 @@ async function run() {
       // const query = { _id: new ObjectId(id) };
       const query = { _id: id };
       const result = await productsCollection.deleteOne(query);
-      res.send(result);
-    });
-
-    // bid related apis
-    app.get("/bids", async (req, res) => {
-      const email = req.query.email;
-      const query = {};
-      if (email) {
-        query_buyer_email = email;
-      }
-
-      const cursor = bidsCollection.find(query);
-      const result = await cursor.toArray();
-      res.send(result);
-    });
-
-    app.get("/bids", async (req, res) => {
-      const cursor = bidsCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    });
-
-    app.get("/products/bids/:productId", async (req, res) => {
-      const productId = req.params.productId;
-      const query = { product: productId };
-      const cursor = bidsCollection.find(query).sort({ bid_price: -1 });
-      const result = await cursor.toArray();
-      res.send(result);
-    });
-
-    app.post("/bids", async (req, res) => {
-      const newBid = req.body;
-      const result = await bidsCollection.insertOne(newBid);
       res.send(result);
     });
 
