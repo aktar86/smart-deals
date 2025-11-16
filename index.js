@@ -2,11 +2,48 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
+require("dotenv").config();
+var admin = require("firebase-admin");
 const port = process.env.PORT || 4000;
+
+var serviceAccount = require("./smart-deals-firebase-adminsdk.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 // middleware
 app.use(cors());
 app.use(express.json());
+
+const logger = (req, res, next) => {
+  console.log("Login information:");
+  next();
+};
+
+const verifyFireBaseToken = async (req, res, next) => {
+  console.log("in the verify middleware:", req.headers.authorization);
+  if (!req.headers.authorization) {
+    //header na thakle break korbe
+    return res.status(401).send({ message: "unauthorised access" });
+  }
+  const token = req.headers.authorization.split(" ")[1];
+
+  if (!token) {
+    //headers ase but token nai tahole break korbe
+    return res.status(401).send({ message: "unauthorised access" });
+  }
+
+  // verify id token
+  //npm install firebase-admin
+  try {
+    const userInfo = await admin.auth().verifyIdToken(token);
+    console.log(userInfo);
+    next();
+  } catch {
+    return res.status(401).send({ message: "unauthorised access" });
+  }
+};
 
 //4ZMRcctaQk7zeRwM
 const uri =
@@ -125,7 +162,8 @@ async function run() {
     });
 
     // bid related apis
-    app.get("/bids", async (req, res) => {
+    app.get("/bids", logger, verifyFireBaseToken, async (req, res) => {
+      // console.log("headers", req.headers);
       const email = req.query.email;
       const query = {};
       if (email) {
