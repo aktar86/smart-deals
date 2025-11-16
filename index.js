@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 // middleware
 app.use(cors());
@@ -130,11 +130,19 @@ async function run() {
       const email = req.query.email;
       const query = {};
       if (email) {
-        query_buyer_email = email;
+        query.buyer_email = email;
       }
 
       const cursor = bidsCollection.find(query);
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    //bid delete
+    app.delete("/bids/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bidsCollection.deleteOne(query);
       res.send(result);
     });
 
