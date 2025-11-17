@@ -3,10 +3,11 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 require("dotenv").config();
-var admin = require("firebase-admin");
+const admin = require("firebase-admin");
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 4000;
 
-var serviceAccount = require("./smart-deals-firebase-adminsdk.json");
+const serviceAccount = require("./smart-deals-firebase-adminsdk.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -65,6 +66,15 @@ async function run() {
     const productsCollection = db.collection("products");
     const bidsCollection = db.collection("bids");
     const userCollection = db.collection("users");
+
+    // JWT related api
+    app.post("/getToken", (req, res) => {
+      const loggedUser = req.body;
+      const token = jwt.sign(loggedUser, process.env.JWT_SECRET, {
+        expiresIn: "1hr",
+      });
+      res.send({ token: token });
+    });
 
     // user APIs here
     app.post("/users", async (req, res) => {
